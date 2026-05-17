@@ -1,13 +1,19 @@
 import random
 import uuid
-import math
+from pathlib import Path
 
-import matplotlib.pyplot as plt
 import requests
 import streamlit as st
 
 
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqa0OpJ9XYZ_3Tr22DdcsQNzSwYiUT_Swx0u_lGL47NXmT8xDs1Td4A4qctICr80smyQ/exec"
+
+BASE_DIR = Path(__file__).resolve().parent
+
+IMAGE_FILES = {
+    "eng": BASE_DIR / "Verteilung_Eng_v3.png",
+    "breit": BASE_DIR / "Verteilung_Breit.png",
+}
 
 
 st.set_page_config(
@@ -34,8 +40,6 @@ Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen 
 
 Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
         "check_correct": "a",
-        "mu": 1000,
-        "sigma": 50,
     },
     "breit": {
         "title": "Stochastischer BATNA",
@@ -50,8 +54,6 @@ Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen 
 
 Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
         "check_correct": "b",
-        "mu": 1000,
-        "sigma": 150,
     },
 }
 
@@ -132,121 +134,14 @@ def start_study():
     st.session_state.save_error = None
 
 
-def normal_pdf(x, mu, sigma):
-    return (1 / (sigma * math.sqrt(2 * math.pi))) * math.exp(
-        -0.5 * ((x - mu) / sigma) ** 2
-    )
-
-
-def make_distribution_plot(condition):
-    stim = STIMULI[condition]
-    mu = stim["mu"]
-    sigma = stim["sigma"]
-
-    x_min = 400
-    x_max = 1600
-    total_offers = 100
-
-    if condition == "eng":
-        bin_width = 35
-        bar_edges = list(range(850, 1151, bin_width))
-        y_max = 34
-    else:
-        bin_width = 70
-        bar_edges = list(range(580, 1421, bin_width))
-        y_max = 24
-
-    bar_centers = []
-    bar_counts = []
-
-    for i in range(len(bar_edges) - 1):
-        left = bar_edges[i]
-        right = bar_edges[i + 1]
-        center = (left + right) / 2
-
-        expected_count = normal_pdf(center, mu, sigma) * bin_width * total_offers
-
-        bar_centers.append(center)
-        bar_counts.append(expected_count)
-
-    x_values = list(range(x_min, x_max + 1, 5))
-    curve_values = [
-        normal_pdf(x, mu, sigma) * bin_width * total_offers
-        for x in x_values
-    ]
-
-    fig, ax = plt.subplots(figsize=(12, 4.8))
-
-    ax.bar(
-        bar_centers,
-        bar_counts,
-        width=bin_width * 0.9,
-        alpha=0.75,
-        label="Mietangebote",
-        edgecolor="white",
-        linewidth=1,
-    )
-
-    ax.plot(
-        x_values,
-        curve_values,
-        linewidth=2,
-        label="Verteilungskurve",
-    )
-
-    ax.axvline(
-        mu,
-        linewidth=2,
-        label="Mittelwert μ = 1,000 €",
-    )
-
-    ax.text(
-        mu + 12,
-        y_max * 0.88,
-        "Ø 1,000 €",
-        fontsize=10,
-        fontweight="bold",
-    )
-
-    ax.text(
-        1435,
-        y_max * 0.82,
-        f"Kennzahlen\nμ (Mittelwert)  1,000 €\nσ (Std.-Abw.)   {sigma} €",
-        fontsize=9,
-        va="top",
-        ha="left",
-        bbox=dict(boxstyle="square,pad=0.45", facecolor="white", edgecolor="lightgray"),
-    )
-
-    ax.set_title(
-        "Monatliche Mietpreise in Frankfurt am Main",
-        fontsize=12,
-        pad=18,
-    )
-
-    ax.set_xlabel("Monatliche Miete (€)")
-    ax.set_ylabel("Anzahl Angebote")
-
-    ax.set_xlim(x_min, x_max)
-    ax.set_ylim(0, y_max)
-
-    x_ticks = list(range(400, 1601, 100))
-    ax.set_xticks(x_ticks)
-    ax.set_xticklabels([f"{x:,} €" for x in x_ticks])
-
-    ax.grid(True, alpha=0.25)
-    ax.legend(loc="upper right", frameon=False, ncol=3, fontsize=9)
-
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-
-    fig.tight_layout()
-    return fig
-
-
 def show_current_histogram():
-    fig = make_distribution_plot(st.session_state.condition)
-    st.pyplot(fig, clear_figure=True)
+    condition = st.session_state.condition
+    image_path = IMAGE_FILES[condition]
+
+    if image_path.exists():
+        st.image(str(image_path), use_container_width=True)
+    else:
+        st.error(f"Histogramm-Datei nicht gefunden: {image_path.name}")
 
 
 def compute_rp_binaer(responses):
