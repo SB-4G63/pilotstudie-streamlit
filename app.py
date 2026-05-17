@@ -1,5 +1,6 @@
 import random
 import uuid
+import math
 
 import matplotlib.pyplot as plt
 import requests
@@ -29,20 +30,12 @@ Du beginnst in zwei Wochen ein sechsmonatiges Pflichtpraktikum in Frankfurt am M
 Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A:
 
 Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf eine andere ähnliche Wohnung warten. Diese alternativen Angebote nennen wir WOHNUNG B.""",
-        "distribution_text": """Die Preise vergleichbarer Wohnungen liegen meist dicht beieinander. Die meisten Angebote bewegen sich zwischen 850 € und 1.150 € pro Monat. Ausreißer nach oben oder unten sind selten.
+        "distribution_text": """Die Preise vergleichbarer Wohnungen liegen meist dicht beieinander. Die meisten Angebote bewegen sich um 1.000 € pro Monat. Größere Abweichungen nach oben oder unten sind selten.
 
-Hier siehst du, wie häufig welche Mietpreise unter den alternativen Wohnungen vorkommen:""",
-        "bins": [
-            "unter 750 €",
-            "750–850 €",
-            "850–950 €",
-            "950–1050 €",
-            "1050–1150 €",
-            "1150–1250 €",
-            "über 1250 €",
-        ],
-        "counts": [0, 2, 23, 50, 23, 2, 0],
+Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
         "check_correct": "a",
+        "mu": 1000,
+        "sigma": 50,
     },
     "breit": {
         "title": "Stochastischer BATNA",
@@ -53,20 +46,12 @@ Du beginnst in zwei Wochen ein sechsmonatiges Pflichtpraktikum in Frankfurt am M
 Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A:
 
 Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf eine andere ähnliche Wohnung warten. Diese alternativen Angebote nennen wir WOHNUNG B.""",
-        "distribution_text": """Die Preise vergleichbarer Wohnungen schwanken stark. Manche Angebote liegen deutlich unter 850 €, andere deutlich über 1.150 € pro Monat. Ausreißer in beide Richtungen kommen häufiger vor.
+        "distribution_text": """Die Preise vergleichbarer Wohnungen schwanken stärker. Die Angebote liegen weiterhin im Durchschnitt bei etwa 1.000 € pro Monat, können aber deutlich günstiger oder deutlich teurer ausfallen.
 
-Hier siehst du, wie häufig welche Mietpreise unter den alternativen Wohnungen vorkommen:""",
-        "bins": [
-            "unter 750 €",
-            "750–850 €",
-            "850–950 €",
-            "950–1050 €",
-            "1050–1150 €",
-            "1150–1250 €",
-            "über 1250 €",
-        ],
-        "counts": [4, 11, 21, 26, 21, 11, 4],
+Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
         "check_correct": "b",
+        "mu": 1000,
+        "sigma": 150,
     },
 }
 
@@ -79,9 +64,9 @@ def init_state():
         "price_index": 0,
         "responses": {},
         "demographics": {},
+        "risk_attitude": None,
         "participant_id": None,
         "submission_id": None,
-        "assignment_reserved": False,
         "already_saved": False,
         "manipulation_answer": None,
         "manipulation_result": None,
@@ -135,11 +120,11 @@ def start_study():
     st.session_state.condition = condition
     st.session_state.participant_id = participant_id
     st.session_state.submission_id = str(uuid.uuid4())
-    st.session_state.assignment_reserved = True
     st.session_state.price_order = generate_price_order()
     st.session_state.price_index = 0
     st.session_state.responses = {}
     st.session_state.demographics = {}
+    st.session_state.risk_attitude = None
     st.session_state.already_saved = False
     st.session_state.manipulation_answer = None
     st.session_state.manipulation_result = None
@@ -147,43 +132,120 @@ def start_study():
     st.session_state.save_error = None
 
 
-def make_histogram(bins, counts, title):
-    fig, ax = plt.subplots(figsize=(10, 5.6))
-    bars = ax.bar(bins, counts)
+def normal_pdf(x, mu, sigma):
+    return (1 / (sigma * math.sqrt(2 * math.pi))) * math.exp(
+        -0.5 * ((x - mu) / sigma) ** 2
+    )
 
-    ax.set_title(title, fontsize=16, fontweight="bold", pad=14)
-    ax.set_xlabel("Mietpreis pro Monat", fontweight="bold", labelpad=12)
-    ax.set_ylabel("Anzahl Wohnungen (von 100)", fontweight="bold", labelpad=12)
-    ax.set_ylim(0, max(counts) + 8)
 
-    for bar, count in zip(bars, counts):
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 0.5,
-            str(count),
-            ha="center",
-            va="bottom",
-            fontsize=10,
-        )
+def make_distribution_plot(condition):
+    stim = STIMULI[condition]
+    mu = stim["mu"]
+    sigma = stim["sigma"]
+
+    x_min = 400
+    x_max = 1600
+    total_offers = 100
+
+    if condition == "eng":
+        bin_width = 35
+        bar_edges = list(range(850, 1151, bin_width))
+        y_max = 34
+    else:
+        bin_width = 70
+        bar_edges = list(range(580, 1421, bin_width))
+        y_max = 24
+
+    bar_centers = []
+    bar_counts = []
+
+    for i in range(len(bar_edges) - 1):
+        left = bar_edges[i]
+        right = bar_edges[i + 1]
+        center = (left + right) / 2
+
+        expected_count = normal_pdf(center, mu, sigma) * bin_width * total_offers
+
+        bar_centers.append(center)
+        bar_counts.append(expected_count)
+
+    x_values = list(range(x_min, x_max + 1, 5))
+    curve_values = [
+        normal_pdf(x, mu, sigma) * bin_width * total_offers
+        for x in x_values
+    ]
+
+    fig, ax = plt.subplots(figsize=(12, 4.8))
+
+    ax.bar(
+        bar_centers,
+        bar_counts,
+        width=bin_width * 0.9,
+        alpha=0.75,
+        label="Mietangebote",
+        edgecolor="white",
+        linewidth=1,
+    )
+
+    ax.plot(
+        x_values,
+        curve_values,
+        linewidth=2,
+        label="Verteilungskurve",
+    )
+
+    ax.axvline(
+        mu,
+        linewidth=2,
+        label="Mittelwert μ = 1,000 €",
+    )
+
+    ax.text(
+        mu + 12,
+        y_max * 0.88,
+        "Ø 1,000 €",
+        fontsize=10,
+        fontweight="bold",
+    )
+
+    ax.text(
+        1435,
+        y_max * 0.82,
+        f"Kennzahlen\nμ (Mittelwert)  1,000 €\nσ (Std.-Abw.)   {sigma} €",
+        fontsize=9,
+        va="top",
+        ha="left",
+        bbox=dict(boxstyle="square,pad=0.45", facecolor="white", edgecolor="lightgray"),
+    )
+
+    ax.set_title(
+        "Monatliche Mietpreise in Frankfurt am Main",
+        fontsize=12,
+        pad=18,
+    )
+
+    ax.set_xlabel("Monatliche Miete (€)")
+    ax.set_ylabel("Anzahl Angebote")
+
+    ax.set_xlim(x_min, x_max)
+    ax.set_ylim(0, y_max)
+
+    x_ticks = list(range(400, 1601, 100))
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels([f"{x:,} €" for x in x_ticks])
+
+    ax.grid(True, alpha=0.25)
+    ax.legend(loc="upper right", frameon=False, ncol=3, fontsize=9)
 
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    fig.tight_layout()
 
+    fig.tight_layout()
     return fig
 
 
 def show_current_histogram():
-    condition = st.session_state.condition
-    stim = STIMULI[condition]
-
-    title = (
-        "Verteilung der Mietpreise (Wohnung B) — enge Streuung"
-        if condition == "eng"
-        else "Verteilung der Mietpreise (Wohnung B) — breite Streuung"
-    )
-
-    fig = make_histogram(stim["bins"], stim["counts"], title)
+    fig = make_distribution_plot(st.session_state.condition)
     st.pyplot(fig, clear_figure=True)
 
 
@@ -221,6 +283,7 @@ def build_result_row():
         "submission_id": st.session_state.submission_id,
         "participant_id": st.session_state.participant_id,
         "condition": st.session_state.condition,
+        "risikobereitschaft_0_10": st.session_state.risk_attitude,
         "alter": st.session_state.demographics.get("alter"),
         "studiengang": st.session_state.demographics.get("studiengang"),
         "schon_selbst_wohnung_gemietet": st.session_state.demographics.get("gemietet"),
@@ -316,10 +379,13 @@ elif st.session_state.phase == "price_questions":
     price = st.session_state.price_order[idx]
     total = len(st.session_state.price_order)
 
+    show_current_histogram()
+
+    st.markdown("---")
     st.subheader(f"Preisabfrage {idx + 1} von {total}")
     st.metric("Aktueller Preis für Wohnung A", f"{price} €")
 
-    show_current_histogram()
+    st.markdown("---")
 
     with st.form(f"price_form_{price}_{idx}"):
         accept = st.radio(
@@ -365,6 +431,14 @@ elif st.session_state.phase == "demographics":
     st.subheader("Abschlussfragen")
 
     with st.form("demography_form"):
+        risk_attitude = st.radio(
+            "Wie schätzen Sie sich persönlich ein: Sind Sie im Allgemeinen ein risikobereiter Mensch, oder versuchen Sie, Risiken zu vermeiden? Bitte kreuzen Sie ein Kästchen auf der Skala an, wobei der Wert 0 bedeutet gar nicht risikobereit und der Wert 10 sehr risikobereit.",
+            options=list(range(0, 11)),
+            index=None,
+            horizontal=True,
+            format_func=lambda x: str(x),
+        )
+
         alter = st.number_input(
             "Alter",
             min_value=0,
@@ -383,7 +457,9 @@ elif st.session_state.phase == "demographics":
 
         submitted = st.form_submit_button("Umfrage abschließen")
 
-    if submitted and gemietet:
+    if submitted and risk_attitude is not None and gemietet:
+        st.session_state.risk_attitude = int(risk_attitude)
+
         st.session_state.demographics = {
             "alter": int(alter),
             "studiengang": studiengang.strip(),
@@ -413,6 +489,9 @@ elif st.session_state.phase == "demographics":
 elif st.session_state.phase == "save_error":
     st.error("Die Antwort konnte gerade nicht gespeichert werden.")
     st.write("Bitte informiere die Versuchsleitung.")
+
+    if st.session_state.save_error:
+        st.caption(st.session_state.save_error)
 
     if st.button("Speichern erneut versuchen"):
         try:
