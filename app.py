@@ -26,6 +26,9 @@ st.set_page_config(
 PRICE_POINTS = [850, 925, 975, 1000, 1025, 1075, 1150]
 
 
+RISK_OPTIONS = [0, 25, 50, 75, 100, 125, 150, 175, 200]
+
+
 STIMULI = {
     "eng": {
         "title": "Stochastischer BATNA",
@@ -66,7 +69,7 @@ def init_state():
         "price_index": 0,
         "responses": {},
         "demographics": {},
-        "risk_attitude": None,
+        "risk_equivalent": None,
         "participant_id": None,
         "submission_id": None,
         "already_saved": False,
@@ -97,7 +100,7 @@ def get_assignment_from_google_sheet():
     response = requests.get(
         GOOGLE_SCRIPT_URL,
         params={"action": "start"},
-        timeout=15,
+        timeout=20,
     )
     response.raise_for_status()
 
@@ -126,7 +129,7 @@ def start_study():
     st.session_state.price_index = 0
     st.session_state.responses = {}
     st.session_state.demographics = {}
-    st.session_state.risk_attitude = None
+    st.session_state.risk_equivalent = None
     st.session_state.already_saved = False
     st.session_state.manipulation_answer = None
     st.session_state.manipulation_result = None
@@ -178,7 +181,7 @@ def build_result_row():
         "submission_id": st.session_state.submission_id,
         "participant_id": st.session_state.participant_id,
         "condition": st.session_state.condition,
-        "risikobereitschaft_0_10": st.session_state.risk_attitude,
+        "risiko_sicherheitsaequivalent": st.session_state.risk_equivalent,
         "alter": st.session_state.demographics.get("alter"),
         "studiengang": st.session_state.demographics.get("studiengang"),
         "schon_selbst_wohnung_gemietet": st.session_state.demographics.get("gemietet"),
@@ -205,7 +208,7 @@ def save_results():
     response = requests.post(
         GOOGLE_SCRIPT_URL,
         json=row,
-        timeout=15,
+        timeout=25,
     )
 
     response.raise_for_status()
@@ -326,12 +329,16 @@ elif st.session_state.phase == "demographics":
     st.subheader("Abschlussfragen")
 
     with st.form("demography_form"):
-        risk_attitude = st.radio(
-            "Wie schätzen Sie sich persönlich ein: Sind Sie im Allgemeinen ein risikobereiter Mensch, oder versuchen Sie, Risiken zu vermeiden? Bitte kreuzen Sie ein Kästchen auf der Skala an, wobei der Wert 0 bedeutet gar nicht risikobereit und der Wert 10 sehr risikobereit.",
-            options=list(range(0, 11)),
+        risk_equivalent = st.radio(
+            """Stellen Sie sich vor, Sie können zwischen einer sicheren Auszahlung und einer unsicheren Auszahlung wählen.
+
+Die unsichere Auszahlung bietet Ihnen eine 50%-Chance auf 200 € und eine 50%-Chance auf 0 €.
+
+Welchen sicheren Betrag würden Sie mindestens verlangen, damit Sie die sichere Auszahlung der unsicheren Alternative vorziehen?""",
+            options=RISK_OPTIONS,
             index=None,
             horizontal=True,
-            format_func=lambda x: str(x),
+            format_func=lambda x: f"{x} €",
         )
 
         alter = st.number_input(
@@ -352,8 +359,8 @@ elif st.session_state.phase == "demographics":
 
         submitted = st.form_submit_button("Umfrage abschließen")
 
-    if submitted and risk_attitude is not None and gemietet:
-        st.session_state.risk_attitude = int(risk_attitude)
+    if submitted and risk_equivalent is not None and gemietet:
+        st.session_state.risk_equivalent = int(risk_equivalent)
 
         st.session_state.demographics = {
             "alter": int(alter),
