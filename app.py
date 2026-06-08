@@ -244,29 +244,29 @@ def add_response_columns(row, prefix, responses, price_order):
 
 
 def build_result_row():
-    first_rp_binaer = compute_rp_binaer(st.session_state.phase1_responses)
-    first_rp_skala = compute_rp_skala(st.session_state.phase1_responses)
+    phase1_rp_binaer = compute_rp_binaer(st.session_state.phase1_responses)
+    phase1_rp_skala = compute_rp_skala(st.session_state.phase1_responses)
 
-    second_rp_binaer = compute_rp_binaer(st.session_state.phase2_responses)
-    second_rp_skala = compute_rp_skala(st.session_state.phase2_responses)
+    phase2_rp_binaer = compute_rp_binaer(st.session_state.phase2_responses)
+    phase2_rp_skala = compute_rp_skala(st.session_state.phase2_responses)
 
     row = {
         "submission_id": st.session_state.submission_id,
         "participant_id": st.session_state.participant_id,
 
-        "first_distribution": st.session_state.phase1_condition,
-        "second_arm": st.session_state.phase2_arm,
-        "second_distribution": st.session_state.phase2_distribution,
+        "phase1_condition": st.session_state.phase1_condition,
+        "phase2_arm": st.session_state.phase2_arm,
+        "phase2_distribution": st.session_state.phase2_distribution,
 
-        "first_manipulation_answer": st.session_state.phase1_manipulation_answer,
-        "first_manipulation_result": st.session_state.phase1_manipulation_result,
-        "second_manipulation_answer": st.session_state.phase2_manipulation_answer,
-        "second_manipulation_result": st.session_state.phase2_manipulation_result,
+        "phase1_manipulation_answer": st.session_state.phase1_manipulation_answer,
+        "phase1_manipulation_result": st.session_state.phase1_manipulation_result,
+        "phase2_manipulation_answer": st.session_state.phase2_manipulation_answer,
+        "phase2_manipulation_result": st.session_state.phase2_manipulation_result,
 
-        "first_rp_binaer": first_rp_binaer,
-        "first_rp_skala": first_rp_skala,
-        "second_rp_binaer": second_rp_binaer,
-        "second_rp_skala": second_rp_skala,
+        "phase1_rp_binaer": phase1_rp_binaer,
+        "phase1_rp_skala": phase1_rp_skala,
+        "phase2_rp_binaer": phase2_rp_binaer,
+        "phase2_rp_skala": phase2_rp_skala,
 
         "risiko_investition_A_sicher": st.session_state.risk_investment_safe,
         "risiko_investition_B_riskant": st.session_state.risk_investment_risky,
@@ -278,14 +278,14 @@ def build_result_row():
 
     add_response_columns(
         row,
-        "first",
+        "phase1",
         st.session_state.phase1_responses,
         st.session_state.phase1_price_order,
     )
 
     add_response_columns(
         row,
-        "second",
+        "phase2",
         st.session_state.phase2_responses,
         st.session_state.phase2_price_order,
     )
@@ -316,13 +316,11 @@ def render_price_question(stage):
         price_order = st.session_state.phase1_price_order
         responses_key = "phase1_responses"
         next_page = "second_intro"
-        section_label = "Preisabfrage"
     else:
         idx = st.session_state.phase2_price_index
         price_order = st.session_state.phase2_price_order
         responses_key = "phase2_responses"
         next_page = "demographics"
-        section_label = "Preisabfrage"
 
     price = price_order[idx]
     total = len(price_order)
@@ -330,7 +328,7 @@ def render_price_question(stage):
     show_histogram(stage)
 
     st.markdown("---")
-    st.subheader(f"{section_label} {idx + 1} von {total}")
+    st.subheader(f"Preisabfrage {idx + 1} von {total}")
     st.metric("Aktueller Preis für Wohnung A", f"{price} €")
 
     st.markdown("---")
