@@ -37,39 +37,56 @@ PRICE_POINTS = [850, 925, 975, 1000, 1025, 1075, 1150]
 STIMULI = {
     "phase1": {
         "eng": {
-            "title": "Phase 1 — Stochastischer BATNA",
+            "title": "Stochastischer BATNA",
             "intro_text": """Stell dir folgende Situation vor:
 
 Du beginnst in zwei Wochen ein sechsmonatiges Pflichtpraktikum in Frankfurt am Main und verdienst in dieser Zeit 1.750 € netto pro Monat.
 
-Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A.
+Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A:
 
 Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf eine andere ähnliche Wohnung warten. Diese alternativen Angebote nennen wir WOHNUNG B.""",
-            "distribution_text": """Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
+            "distribution_text": """Aus deinen Recherchen weißt du außerdem: Die Preise vergleichbarer Wohnungen liegen meistens dicht beieinander. Die meisten Angebote bewegen sich um einen ähnlichen Mietpreis, starke Abweichungen nach oben oder unten sind eher selten.
+
+Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
             "check_correct": "a",
         },
         "breit": {
-            "title": "Phase 1 — Stochastischer BATNA",
+            "title": "Stochastischer BATNA",
             "intro_text": """Stell dir folgende Situation vor:
 
 Du beginnst in zwei Wochen ein sechsmonatiges Pflichtpraktikum in Frankfurt am Main und verdienst in dieser Zeit 1.750 € netto pro Monat.
 
-Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A.
+Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A:
 
 Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf eine andere ähnliche Wohnung warten. Diese alternativen Angebote nennen wir WOHNUNG B.""",
-            "distribution_text": """Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
+            "distribution_text": """Aus deinen Recherchen weißt du außerdem: Die Preise vergleichbarer Wohnungen schwanken deutlich stärker. Es gibt sowohl günstigere als auch deutlich teurere Angebote, die Mietpreise liegen also weiter auseinander.
+
+Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
             "check_correct": "b",
         },
     },
     "phase2": {
         "intro_text": """Einige Monate später wird dein Praktikumsvertrag überraschend verlängert. Du möchtest weiterhin in Frankfurt bleiben, aber dein aktueller Mietvertrag läuft bald aus und kann nicht verlängert werden.
 
-Deshalb musst du erneut eine passende 1-Zimmer-Wohnung finden. Wieder findest du eine perfekte Wohnung – WOHNUNG A – mit denselben Eigenschaften wie zuvor.
+Deshalb musst du erneut eine passende 1-Zimmer-Wohnung finden. Wieder findest du eine perfekte Wohnung – WOHNUNG A – mit denselben Eigenschaften wie zuvor:
 
 Der Vermieter macht dir erneut ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf alternative Wohnungen warten. Diese alternativen Angebote nennen wir wieder WOHNUNG B.
 
 Wenn du nicht rechtzeitig eine Wohnung findest, müsstest du kurzfristig eine deutlich unpraktischere Übergangslösung suchen, zum Beispiel längeres Pendeln oder eine teurere Zwischenmiete.""",
-        "distribution_text": """Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in dieser neuen Situation verteilt sind:""",
+        "distribution_texts": {
+            "eng_kontrolle": """Auch in dieser neuen Situation liegen die Preise vergleichbarer Wohnungen meistens dicht beieinander. Die meisten Angebote bewegen sich um einen ähnlichen Mietpreis, starke Abweichungen nach oben oder unten sind eher selten.
+
+Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in dieser neuen Situation verteilt sind:""",
+            "breit_kontrolle": """Auch in dieser neuen Situation schwanken die Preise vergleichbarer Wohnungen deutlich stärker. Es gibt sowohl günstigere als auch deutlich teurere Angebote, die Mietpreise liegen also weiter auseinander.
+
+Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in dieser neuen Situation verteilt sind:""",
+            "eng_bimodal": """In dieser neuen Situation konzentrieren sich die Preise vergleichbarer Wohnungen nicht nur um einen einzelnen Bereich, sondern eher um zwei nahe beieinanderliegende Preisbereiche. Es gibt also zwei Häufungen von Angeboten.
+
+Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in dieser neuen Situation verteilt sind:""",
+            "breit_bimodal": """In dieser neuen Situation konzentrieren sich die Preise vergleichbarer Wohnungen nicht nur um einen einzelnen Bereich, sondern eher um zwei deutlich getrennte Preisbereiche. Es gibt also zwei Häufungen von Angeboten: einen günstigeren und einen teureren Bereich.
+
+Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in dieser neuen Situation verteilt sind:""",
+        },
     },
 }
 
@@ -134,10 +151,10 @@ def get_assignment_from_google_sheet():
     phase2_arm = data.get("phase2_arm")
 
     if phase1_condition not in ["eng", "breit"]:
-        raise RuntimeError(f"Ungültige Phase-1-Bedingung erhalten: {data}")
+        raise RuntimeError(f"Ungültige Bedingung erhalten: {data}")
 
     if phase2_arm not in ["kontrolle", "bimodal"]:
-        raise RuntimeError(f"Ungültiger Phase-2-Arm erhalten: {data}")
+        raise RuntimeError(f"Ungültige zweite Bedingung erhalten: {data}")
 
     if not data.get("participant_id"):
         raise RuntimeError(f"Keine participant_id erhalten: {data}")
@@ -149,7 +166,7 @@ def start_study():
     participant_id, phase1_condition, phase2_arm = get_assignment_from_google_sheet()
     phase2_distribution = f"{phase1_condition}_{phase2_arm}"
 
-    st.session_state.phase = "phase1_stimulus"
+    st.session_state.phase = "first_stimulus"
     st.session_state.participant_id = participant_id
     st.session_state.phase1_condition = phase1_condition
     st.session_state.phase2_arm = phase2_arm
@@ -178,8 +195,8 @@ def start_study():
     st.session_state.save_error = None
 
 
-def show_histogram(phase_name):
-    if phase_name == "phase1":
+def show_histogram(stage):
+    if stage == "first":
         image_path = IMAGE_FILES["phase1"][st.session_state.phase1_condition]
     else:
         image_path = IMAGE_FILES["phase2"][st.session_state.phase2_distribution]
@@ -216,40 +233,40 @@ def compute_rp_skala(responses):
     return max(ok_prices)
 
 
-def add_phase_response_columns(row, phase_prefix, responses, price_order):
+def add_response_columns(row, prefix, responses, price_order):
     for price in PRICE_POINTS:
         answer = responses.get(price, {})
-        row[f"{phase_prefix}_preis_{price}_accept"] = answer.get("accept")
-        row[f"{phase_prefix}_preis_{price}_feeling"] = answer.get("feeling")
+        row[f"{prefix}_preis_{price}_accept"] = answer.get("accept")
+        row[f"{prefix}_preis_{price}_feeling"] = answer.get("feeling")
 
     for i, price in enumerate(price_order, start=1):
-        row[f"{phase_prefix}_reihenfolge_{i}"] = price
+        row[f"{prefix}_reihenfolge_{i}"] = price
 
 
 def build_result_row():
-    phase1_rp_binaer = compute_rp_binaer(st.session_state.phase1_responses)
-    phase1_rp_skala = compute_rp_skala(st.session_state.phase1_responses)
+    first_rp_binaer = compute_rp_binaer(st.session_state.phase1_responses)
+    first_rp_skala = compute_rp_skala(st.session_state.phase1_responses)
 
-    phase2_rp_binaer = compute_rp_binaer(st.session_state.phase2_responses)
-    phase2_rp_skala = compute_rp_skala(st.session_state.phase2_responses)
+    second_rp_binaer = compute_rp_binaer(st.session_state.phase2_responses)
+    second_rp_skala = compute_rp_skala(st.session_state.phase2_responses)
 
     row = {
         "submission_id": st.session_state.submission_id,
         "participant_id": st.session_state.participant_id,
 
-        "phase1_condition": st.session_state.phase1_condition,
-        "phase2_arm": st.session_state.phase2_arm,
-        "phase2_distribution": st.session_state.phase2_distribution,
+        "first_distribution": st.session_state.phase1_condition,
+        "second_arm": st.session_state.phase2_arm,
+        "second_distribution": st.session_state.phase2_distribution,
 
-        "phase1_manipulation_answer": st.session_state.phase1_manipulation_answer,
-        "phase1_manipulation_result": st.session_state.phase1_manipulation_result,
-        "phase2_manipulation_answer": st.session_state.phase2_manipulation_answer,
-        "phase2_manipulation_result": st.session_state.phase2_manipulation_result,
+        "first_manipulation_answer": st.session_state.phase1_manipulation_answer,
+        "first_manipulation_result": st.session_state.phase1_manipulation_result,
+        "second_manipulation_answer": st.session_state.phase2_manipulation_answer,
+        "second_manipulation_result": st.session_state.phase2_manipulation_result,
 
-        "phase1_rp_binaer": phase1_rp_binaer,
-        "phase1_rp_skala": phase1_rp_skala,
-        "phase2_rp_binaer": phase2_rp_binaer,
-        "phase2_rp_skala": phase2_rp_skala,
+        "first_rp_binaer": first_rp_binaer,
+        "first_rp_skala": first_rp_skala,
+        "second_rp_binaer": second_rp_binaer,
+        "second_rp_skala": second_rp_skala,
 
         "risiko_investition_A_sicher": st.session_state.risk_investment_safe,
         "risiko_investition_B_riskant": st.session_state.risk_investment_risky,
@@ -259,16 +276,16 @@ def build_result_row():
         "schon_selbst_wohnung_gemietet": st.session_state.demographics.get("gemietet"),
     }
 
-    add_phase_response_columns(
+    add_response_columns(
         row,
-        "phase1",
+        "first",
         st.session_state.phase1_responses,
         st.session_state.phase1_price_order,
     )
 
-    add_phase_response_columns(
+    add_response_columns(
         row,
-        "phase2",
+        "second",
         st.session_state.phase2_responses,
         st.session_state.phase2_price_order,
     )
@@ -293,32 +310,32 @@ def save_results():
         raise RuntimeError(f"Apps Script Antwort war nicht ok: {result}")
 
 
-def render_price_question(phase_prefix):
-    if phase_prefix == "phase1":
+def render_price_question(stage):
+    if stage == "first":
         idx = st.session_state.phase1_price_index
         price_order = st.session_state.phase1_price_order
         responses_key = "phase1_responses"
-        next_phase = "phase2_intro"
-        phase_label = "Phase 1"
+        next_page = "second_intro"
+        section_label = "Preisabfrage"
     else:
         idx = st.session_state.phase2_price_index
         price_order = st.session_state.phase2_price_order
         responses_key = "phase2_responses"
-        next_phase = "demographics"
-        phase_label = "Phase 2"
+        next_page = "demographics"
+        section_label = "Preisabfrage"
 
     price = price_order[idx]
     total = len(price_order)
 
-    show_histogram(phase_prefix)
+    show_histogram(stage)
 
     st.markdown("---")
-    st.subheader(f"{phase_label} — Preisabfrage {idx + 1} von {total}")
+    st.subheader(f"{section_label} {idx + 1} von {total}")
     st.metric("Aktueller Preis für Wohnung A", f"{price} €")
 
     st.markdown("---")
 
-    with st.form(f"{phase_prefix}_price_form_{price}_{idx}"):
+    with st.form(f"{stage}_price_form_{price}_{idx}"):
         accept = st.radio(
             "Würdest du Wohnung A zu diesem Preis nehmen?",
             options=["Ja", "Nein"],
@@ -350,16 +367,16 @@ def render_price_question(phase_prefix):
             "feeling": int(feeling),
         }
 
-        if phase_prefix == "phase1":
+        if stage == "first":
             st.session_state.phase1_price_index += 1
 
             if st.session_state.phase1_price_index >= total:
-                st.session_state.phase = next_phase
+                st.session_state.phase = next_page
         else:
             st.session_state.phase2_price_index += 1
 
             if st.session_state.phase2_price_index >= total:
-                st.session_state.phase = next_phase
+                st.session_state.phase = next_page
 
         st.rerun()
 
@@ -382,7 +399,7 @@ if st.session_state.phase == "welcome":
             st.caption(str(e))
 
 
-elif st.session_state.phase == "phase1_stimulus":
+elif st.session_state.phase == "first_stimulus":
     condition = st.session_state.phase1_condition
     stim = STIMULI["phase1"][condition]
 
@@ -391,9 +408,9 @@ elif st.session_state.phase == "phase1_stimulus":
     st.markdown("---")
     st.markdown(stim["distribution_text"])
 
-    show_histogram("phase1")
+    show_histogram("first")
 
-    with st.form("phase1_manipulation_check"):
+    with st.form("first_manipulation_check"):
         answer = st.radio(
             "Welche Aussage trifft auf die alternativen Wohnungen am ehesten zu?",
             options=[
@@ -413,31 +430,36 @@ elif st.session_state.phase == "phase1_stimulus":
             "richtig" if selected == stim["check_correct"] else "falsch"
         )
 
-        st.session_state.phase = "phase1_prices"
+        st.session_state.phase = "first_prices"
         st.rerun()
 
 
-elif st.session_state.phase == "phase1_prices":
-    render_price_question("phase1")
+elif st.session_state.phase == "first_prices":
+    render_price_question("first")
 
 
-elif st.session_state.phase == "phase2_intro":
-    st.subheader("Phase 2 — Neue Wohnsituation")
+elif st.session_state.phase == "second_intro":
+    st.subheader("Neue Wohnsituation")
     st.markdown(STIMULI["phase2"]["intro_text"])
 
-    if st.button("Weiter zu Phase 2", type="primary"):
-        st.session_state.phase = "phase2_stimulus"
+    if st.button("Weiter", type="primary"):
+        st.session_state.phase = "second_stimulus"
         st.rerun()
 
 
-elif st.session_state.phase == "phase2_stimulus":
-    st.subheader("Phase 2 — Stochastischer BATNA")
-    st.markdown(STIMULI["phase2"]["distribution_text"])
+elif st.session_state.phase == "second_stimulus":
+    st.subheader("Stochastischer BATNA")
 
-    show_histogram("phase2")
+    distribution_text = STIMULI["phase2"]["distribution_texts"][
+        st.session_state.phase2_distribution
+    ]
+
+    st.markdown(distribution_text)
+
+    show_histogram("second")
 
     if st.session_state.phase2_arm == "bimodal":
-        with st.form("phase2_manipulation_check"):
+        with st.form("second_manipulation_check"):
             answer = st.radio(
                 "Welche Aussage beschreibt die Verteilung der alternativen Wohnungen am ehesten?",
                 options=[
@@ -457,7 +479,7 @@ elif st.session_state.phase == "phase2_stimulus":
                 "richtig" if selected == "b" else "falsch"
             )
 
-            st.session_state.phase = "phase2_prices"
+            st.session_state.phase = "second_prices"
             st.rerun()
 
     else:
@@ -465,12 +487,12 @@ elif st.session_state.phase == "phase2_stimulus":
         st.session_state.phase2_manipulation_result = ""
 
         if st.button("Weiter"):
-            st.session_state.phase = "phase2_prices"
+            st.session_state.phase = "second_prices"
             st.rerun()
 
 
-elif st.session_state.phase == "phase2_prices":
-    render_price_question("phase2")
+elif st.session_state.phase == "second_prices":
+    render_price_question("second")
 
 
 elif st.session_state.phase == "demographics":
