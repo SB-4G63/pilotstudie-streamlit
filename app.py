@@ -43,7 +43,7 @@ STIMULI = {
 
 Du beginnst in zwei Wochen ein sechsmonatiges Pflichtpraktikum in Frankfurt am Main und verdienst in dieser Zeit 1.750 € netto pro Monat.
 
-Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A:
+Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A.
 
 Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf eine andere ähnliche Wohnung warten. Diese alternativen Angebote nennen wir WOHNUNG B.""",
             "distribution_text": """Aus deinen Recherchen weißt du außerdem: Die Preise vergleichbarer Wohnungen liegen meistens dicht beieinander. Die meisten Angebote bewegen sich um einen ähnlichen Mietpreis, starke Abweichungen nach oben oder unten sind eher selten.
@@ -57,7 +57,7 @@ Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt
 
 Du beginnst in zwei Wochen ein sechsmonatiges Pflichtpraktikum in Frankfurt am Main und verdienst in dieser Zeit 1.750 € netto pro Monat.
 
-Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A:
+Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene 1-Zimmer-Wohnung. Du hast bereits eine perfekte Wohnung gefunden – WOHNUNG A.
 
 Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf eine andere ähnliche Wohnung warten. Diese alternativen Angebote nennen wir WOHNUNG B.""",
             "distribution_text": """Aus deinen Recherchen weißt du außerdem: Die Preise vergleichbarer Wohnungen schwanken deutlich stärker. Es gibt sowohl günstigere als auch deutlich teurere Angebote, die Mietpreise liegen also weiter auseinander.
@@ -69,7 +69,7 @@ Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt
     "phase2": {
         "intro_text": """Einige Monate später wird dein Praktikumsvertrag überraschend verlängert. Du möchtest weiterhin in Frankfurt bleiben, aber dein aktueller Mietvertrag läuft bald aus und kann nicht verlängert werden.
 
-Deshalb musst du erneut eine passende 1-Zimmer-Wohnung finden. Wieder findest du eine perfekte Wohnung – WOHNUNG A – mit denselben Eigenschaften wie zuvor.
+Deshalb musst du erneut eine passende 1-Zimmer-Wohnung finden. Wieder findest du eine perfekte Wohnung – WOHNUNG A.
 
 Der Vermieter macht dir erneut ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf alternative Wohnungen warten. Diese alternativen Angebote nennen wir wieder WOHNUNG B.
 
@@ -96,12 +96,55 @@ def scroll_to_top():
     components.html(
         """
         <script>
-            function scrollToTop() {
-                window.parent.scrollTo({top: 0, left: 0, behavior: "instant"});
+            function forceScrollTop() {
+                try {
+                    const doc = window.parent.document;
+
+                    window.parent.scrollTo(0, 0);
+                    doc.documentElement.scrollTop = 0;
+                    doc.body.scrollTop = 0;
+
+                    const selectors = [
+                        '[data-testid="stAppViewContainer"]',
+                        '[data-testid="stVerticalBlock"]',
+                        '.stApp',
+                        'section.main',
+                        'main',
+                        '.main'
+                    ];
+
+                    selectors.forEach(selector => {
+                        const elements = doc.querySelectorAll(selector);
+                        elements.forEach(el => {
+                            if (el) {
+                                el.scrollTop = 0;
+                            }
+                        });
+                    });
+
+                    const scrollableElements = Array.from(doc.querySelectorAll('*')).filter(el => {
+                        const style = window.parent.getComputedStyle(el);
+                        return (
+                            (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+                            el.scrollHeight > el.clientHeight
+                        );
+                    });
+
+                    scrollableElements.forEach(el => {
+                        el.scrollTop = 0;
+                    });
+
+                } catch (e) {
+                    console.log("Scroll-to-top failed:", e);
+                }
             }
-            setTimeout(scrollToTop, 0);
-            setTimeout(scrollToTop, 100);
-            setTimeout(scrollToTop, 300);
+
+            forceScrollTop();
+            setTimeout(forceScrollTop, 50);
+            setTimeout(forceScrollTop, 150);
+            setTimeout(forceScrollTop, 300);
+            setTimeout(forceScrollTop, 600);
+            setTimeout(forceScrollTop, 1000);
         </script>
         """,
         height=0,
@@ -328,6 +371,8 @@ def save_results():
 
 
 def render_price_question(stage):
+    scroll_to_top()
+
     if stage == "first":
         idx = st.session_state.phase1_price_index
         price_order = st.session_state.phase1_price_order
