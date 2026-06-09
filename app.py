@@ -4,6 +4,7 @@ from pathlib import Path
 
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqa0OpJ9XYZ_3Tr22DdcsQNzSwYiUT_Swx0u_lGL47NXmT8xDs1Td4A4qctICr80smyQ/exec"
@@ -68,7 +69,7 @@ Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt
     "phase2": {
         "intro_text": """Einige Monate später wird dein Praktikumsvertrag überraschend verlängert. Du möchtest weiterhin in Frankfurt bleiben, aber dein aktueller Mietvertrag läuft bald aus und kann nicht verlängert werden.
 
-Deshalb musst du erneut eine passende 1-Zimmer-Wohnung finden. Wieder findest du eine perfekte Wohnung – WOHNUNG A – mit denselben Eigenschaften wie zuvor:
+Deshalb musst du erneut eine passende 1-Zimmer-Wohnung finden. Wieder findest du eine perfekte Wohnung – WOHNUNG A – mit denselben Eigenschaften wie zuvor.
 
 Der Vermieter macht dir erneut ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf alternative Wohnungen warten. Diese alternativen Angebote nennen wir wieder WOHNUNG B.
 
@@ -89,6 +90,22 @@ Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in diese
         },
     },
 }
+
+
+def scroll_to_top():
+    components.html(
+        """
+        <script>
+            function scrollToTop() {
+                window.parent.scrollTo({top: 0, left: 0, behavior: "instant"});
+            }
+            setTimeout(scrollToTop, 0);
+            setTimeout(scrollToTop, 100);
+            setTimeout(scrollToTop, 300);
+        </script>
+        """,
+        height=0,
+    )
 
 
 def init_state():
@@ -381,6 +398,7 @@ def render_price_question(stage):
 
 init_state()
 
+scroll_to_top()
 
 st.title("Pilotstudie — Stochastische BATNA & Reservationspreis")
 
@@ -497,25 +515,26 @@ elif st.session_state.phase == "demographics":
     st.subheader("Abschlussfragen")
 
     with st.form("demography_form"):
-        risky_amount = st.slider(
+        st.markdown(
             """Stellen Sie sich vor, Sie haben 100.000 € zum Investieren und können diesen Betrag frei auf zwei Investitionsmöglichkeiten aufteilen.
 
 Investition A verdoppelt den investierten Betrag garantiert.
 
 Investition B hat eine 50%-Chance, den investierten Betrag zu verfünffachen, und eine 50%-Chance, den investierten Betrag vollständig zu verlieren.
 
-Wie viel der 100.000 € würden Sie in Investition B investieren? Der restliche Betrag wird automatisch in Investition A investiert.""",
+Wie viel der 100.000 € würden Sie in Investition B investieren?
+
+**Der restliche Betrag wird automatisch in Investition A investiert.**"""
+        )
+
+        risky_amount = st.slider(
+            "Betrag für Investition B",
             min_value=0,
             max_value=100000,
             value=50000,
             step=5000,
             format="%d €",
         )
-
-        safe_amount = 100000 - risky_amount
-
-        st.write(f"Investition A, sicher: **{safe_amount:,.0f} €**".replace(",", "."))
-        st.write(f"Investition B, riskant: **{risky_amount:,.0f} €**".replace(",", "."))
 
         alter = st.number_input(
             "Alter",
@@ -537,7 +556,7 @@ Wie viel der 100.000 € würden Sie in Investition B investieren? Der restliche
 
     if submitted and gemietet:
         st.session_state.risk_investment_risky = int(risky_amount)
-        st.session_state.risk_investment_safe = int(safe_amount)
+        st.session_state.risk_investment_safe = int(100000 - risky_amount)
 
         st.session_state.demographics = {
             "alter": int(alter),
