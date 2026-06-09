@@ -92,12 +92,14 @@ Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in diese
 }
 
 
-def scroll_to_top():
+def scroll_to_top(token=""):
     components.html(
-        """
+        f"""
         <script>
-            function forceScrollTop() {
-                try {
+            const scrollToken = "{token}";
+
+            function forceScrollTop() {{
+                try {{
                     const doc = window.parent.document;
 
                     window.parent.scrollTo(0, 0);
@@ -106,6 +108,7 @@ def scroll_to_top():
 
                     const selectors = [
                         '[data-testid="stAppViewContainer"]',
+                        '[data-testid="stMain"]',
                         '[data-testid="stVerticalBlock"]',
                         '.stApp',
                         'section.main',
@@ -113,31 +116,31 @@ def scroll_to_top():
                         '.main'
                     ];
 
-                    selectors.forEach(selector => {
+                    selectors.forEach(selector => {{
                         const elements = doc.querySelectorAll(selector);
-                        elements.forEach(el => {
-                            if (el) {
+                        elements.forEach(el => {{
+                            if (el) {{
                                 el.scrollTop = 0;
-                            }
-                        });
-                    });
+                            }}
+                        }});
+                    }});
 
-                    const scrollableElements = Array.from(doc.querySelectorAll('*')).filter(el => {
+                    const scrollableElements = Array.from(doc.querySelectorAll('*')).filter(el => {{
                         const style = window.parent.getComputedStyle(el);
                         return (
                             (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
                             el.scrollHeight > el.clientHeight
                         );
-                    });
+                    }});
 
-                    scrollableElements.forEach(el => {
+                    scrollableElements.forEach(el => {{
                         el.scrollTop = 0;
-                    });
+                    }});
 
-                } catch (e) {
+                }} catch (e) {{
                     console.log("Scroll-to-top failed:", e);
-                }
-            }
+                }}
+            }}
 
             forceScrollTop();
             setTimeout(forceScrollTop, 50);
@@ -145,6 +148,7 @@ def scroll_to_top():
             setTimeout(forceScrollTop, 300);
             setTimeout(forceScrollTop, 600);
             setTimeout(forceScrollTop, 1000);
+            setTimeout(forceScrollTop, 1500);
         </script>
         """,
         height=0,
@@ -154,6 +158,7 @@ def scroll_to_top():
 def init_state():
     defaults = {
         "phase": "welcome",
+        "scroll_token": 0,
         "phase1_condition": None,
         "phase2_arm": None,
         "phase2_distribution": None,
@@ -253,6 +258,7 @@ def start_study():
     st.session_state.phase2_manipulation_result = None
     st.session_state.save_status = None
     st.session_state.save_error = None
+    st.session_state.scroll_token += 1
 
 
 def show_histogram(stage):
@@ -371,7 +377,9 @@ def save_results():
 
 
 def render_price_question(stage):
-    scroll_to_top()
+    scroll_to_top(
+        token=f"{stage}_{st.session_state.phase1_price_index}_{st.session_state.phase2_price_index}_{st.session_state.scroll_token}"
+    )
 
     if stage == "first":
         idx = st.session_state.phase1_price_index
@@ -427,6 +435,8 @@ def render_price_question(stage):
             "feeling": int(feeling),
         }
 
+        st.session_state.scroll_token += 1
+
         if stage == "first":
             st.session_state.phase1_price_index += 1
 
@@ -443,7 +453,7 @@ def render_price_question(stage):
 
 init_state()
 
-scroll_to_top()
+scroll_to_top(token=f"global_{st.session_state.phase}_{st.session_state.scroll_token}")
 
 st.title("Pilotstudie — Stochastische BATNA & Reservationspreis")
 
@@ -491,6 +501,7 @@ elif st.session_state.phase == "first_stimulus":
             "richtig" if selected == stim["check_correct"] else "falsch"
         )
 
+        st.session_state.scroll_token += 1
         st.session_state.phase = "first_prices"
         st.rerun()
 
@@ -504,6 +515,7 @@ elif st.session_state.phase == "second_intro":
     st.markdown(STIMULI["phase2"]["intro_text"])
 
     if st.button("Weiter", type="primary"):
+        st.session_state.scroll_token += 1
         st.session_state.phase = "second_stimulus"
         st.rerun()
 
@@ -540,6 +552,7 @@ elif st.session_state.phase == "second_stimulus":
                 "richtig" if selected == "b" else "falsch"
             )
 
+            st.session_state.scroll_token += 1
             st.session_state.phase = "second_prices"
             st.rerun()
 
@@ -548,6 +561,7 @@ elif st.session_state.phase == "second_stimulus":
         st.session_state.phase2_manipulation_result = ""
 
         if st.button("Weiter"):
+            st.session_state.scroll_token += 1
             st.session_state.phase = "second_prices"
             st.rerun()
 
@@ -616,14 +630,17 @@ Wie viel der 100.000 € würden Sie in Investition B investieren?
                 save_results()
                 st.session_state.save_status = "online_saved"
                 st.session_state.save_error = None
+                st.session_state.scroll_token += 1
                 st.session_state.phase = "end"
 
             except Exception as e:
                 st.session_state.save_status = "not_saved"
                 st.session_state.save_error = str(e)
+                st.session_state.scroll_token += 1
                 st.session_state.phase = "save_error"
 
         else:
+            st.session_state.scroll_token += 1
             st.session_state.phase = "end"
 
         st.rerun()
@@ -641,6 +658,7 @@ elif st.session_state.phase == "save_error":
             save_results()
             st.session_state.save_status = "online_saved"
             st.session_state.save_error = None
+            st.session_state.scroll_token += 1
             st.session_state.phase = "end"
             st.rerun()
         except Exception as e:
