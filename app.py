@@ -427,10 +427,9 @@ def render_price_question(stage):
 
 init_state()
 
-st.title("Pilotstudie — Stochastische BATNA & Reservationspreis")
-
 
 if st.session_state.phase == "welcome":
+    st.title("Pilotstudie — Stochastische BATNA & Reservationspreis")
     st.write("Bitte starte die Umfrage, wenn du bereit bist.")
 
     if st.button("Umfrage starten", type="primary"):
@@ -443,6 +442,8 @@ if st.session_state.phase == "welcome":
 
 
 elif st.session_state.phase == "first_stimulus":
+    st.title("Pilotstudie — Stochastische BATNA & Reservationspreis")
+
     condition = st.session_state.phase1_condition
     stim = STIMULI["phase1"][condition]
 
@@ -543,6 +544,8 @@ elif st.session_state.phase == "second_prices":
 
 
 elif st.session_state.phase == "demographics":
+    scroll_to_top(token=f"demographics_{st.session_state.scroll_token}")
+
     st.subheader("Abschlussfragen")
 
     with st.form("demography_form"):
@@ -639,5 +642,6 @@ elif st.session_state.phase == "save_error":
 
 
 elif st.session_state.phase == "end":
+    st.title("Pilotstudie — Stochastische BATNA & Reservationspreis")
     st.success("Vielen Dank für deine Teilnahme.")
     st.write("Die Umfrage ist abgeschlossen.")
