@@ -106,35 +106,14 @@ def scroll_to_top(token=""):
                     doc.documentElement.scrollTop = 0;
                     doc.body.scrollTop = 0;
 
-                    const selectors = [
-                        '[data-testid="stAppViewContainer"]',
-                        '[data-testid="stMain"]',
-                        '[data-testid="stVerticalBlock"]',
-                        '.stApp',
-                        'section.main',
-                        'main',
-                        '.main'
-                    ];
+                    const mainContainers = doc.querySelectorAll(
+                        '[data-testid="stAppViewContainer"], [data-testid="stMain"], main, section.main'
+                    );
 
-                    selectors.forEach(selector => {{
-                        const elements = doc.querySelectorAll(selector);
-                        elements.forEach(el => {{
-                            if (el) {{
-                                el.scrollTop = 0;
-                            }}
-                        }});
-                    }});
-
-                    const scrollableElements = Array.from(doc.querySelectorAll('*')).filter(el => {{
-                        const style = window.parent.getComputedStyle(el);
-                        return (
-                            (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
-                            el.scrollHeight > el.clientHeight
-                        );
-                    }});
-
-                    scrollableElements.forEach(el => {{
-                        el.scrollTop = 0;
+                    mainContainers.forEach(el => {{
+                        if (el) {{
+                            el.scrollTop = 0;
+                        }}
                     }});
 
                 }} catch (e) {{
@@ -142,13 +121,8 @@ def scroll_to_top(token=""):
                 }}
             }}
 
-            forceScrollTop();
-            setTimeout(forceScrollTop, 50);
-            setTimeout(forceScrollTop, 150);
-            setTimeout(forceScrollTop, 300);
-            setTimeout(forceScrollTop, 600);
-            setTimeout(forceScrollTop, 1000);
-            setTimeout(forceScrollTop, 1500);
+            requestAnimationFrame(forceScrollTop);
+            setTimeout(forceScrollTop, 80);
         </script>
         """,
         height=0,
@@ -452,8 +426,6 @@ def render_price_question(stage):
 
 
 init_state()
-
-scroll_to_top(token=f"global_{st.session_state.phase}_{st.session_state.scroll_token}")
 
 st.title("Pilotstudie — Stochastische BATNA & Reservationspreis")
 
