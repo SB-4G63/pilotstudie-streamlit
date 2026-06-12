@@ -36,7 +36,7 @@ DISTRIBUTION_INFO = {
         "description_first": """Aus deinen Recherchen weißt du außerdem: Die Preise vergleichbarer Wohnungen liegen meistens dicht beieinander. Die meisten Angebote bewegen sich um einen ähnlichen Mietpreis, starke Abweichungen nach oben oder unten sind eher selten.
 
 Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
-        "description_second": """Auch in dieser neuen Situation liegen die Preise vergleichbarer Wohnungen meistens dicht beieinander. Die meisten Angebote bewegen sich um einen ähnlichen Mietpreis, starke Abweichungen nach oben oder unten sind eher selten.
+        "description_second": """In dieser neuen Situation liegen die Preise vergleichbarer Wohnungen meistens dicht beieinander. Die meisten Angebote bewegen sich um einen ähnlichen Mietpreis, starke Abweichungen nach oben oder unten sind eher selten.
 
 Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in dieser neuen Situation verteilt sind:""",
         "check_correct": "a",
@@ -47,7 +47,7 @@ Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in diese
         "description_first": """Aus deinen Recherchen weißt du außerdem: Die Preise vergleichbarer Wohnungen schwanken deutlich stärker. Es gibt sowohl günstigere als auch deutlich teurere Angebote, die Mietpreise liegen also weiter auseinander.
 
 Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen verteilt sind:""",
-        "description_second": """Auch in dieser neuen Situation schwanken die Preise vergleichbarer Wohnungen deutlich stärker. Es gibt sowohl günstigere als auch deutlich teurere Angebote, die Mietpreise liegen also weiter auseinander.
+        "description_second": """In dieser neuen Situation schwanken die Preise vergleichbarer Wohnungen deutlich stärker. Es gibt sowohl günstigere als auch deutlich teurere Angebote, die Mietpreise liegen also weiter auseinander.
 
 Hier siehst du, wie die monatlichen Mietpreise vergleichbarer Wohnungen in dieser neuen Situation verteilt sind:""",
         "check_correct": "b",
@@ -86,13 +86,13 @@ Da du nicht in Frankfurt wohnst, brauchst du für diese sechs Monate eine eigene
 Der Vermieter macht dir gleich ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf eine andere ähnliche Wohnung warten. Diese alternativen Angebote nennen wir WOHNUNG B."""
 
 
-SECOND_SITUATION_TEXT = """Einige Monate später wird dein Praktikumsvertrag überraschend verlängert. Du möchtest weiterhin in Frankfurt bleiben, aber dein aktueller Mietvertrag läuft bald aus und kann nicht verlängert werden.
+SECOND_SITUATION_TEXT = """Stell dir nun eine neue Situation vor:
 
-Deshalb musst du erneut eine passende 1-Zimmer-Wohnung finden. Wieder findest du eine perfekte Wohnung – WOHNUNG A.
+Dein Praktikum in Frankfurt wird verlängert, aber dein aktueller Mietvertrag läuft bald aus und kann nicht verlängert werden.
 
-Der Vermieter macht dir erneut ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf alternative Wohnungen warten. Diese alternativen Angebote nennen wir wieder WOHNUNG B.
+Du musst deshalb erneut eine Wohnung suchen und findest wieder eine perfekte Wohnung – WOHNUNG A.
 
-Wenn du nicht rechtzeitig eine Wohnung findest, müsstest du kurzfristig eine deutlich unpraktischere Übergangslösung suchen, zum Beispiel längeres Pendeln oder eine teurere Zwischenmiete."""
+Der Vermieter macht dir ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf alternative Wohnungen warten. Diese alternativen Angebote nennen wir wieder WOHNUNG B."""
 
 
 MANIPULATION_OPTIONS = [
