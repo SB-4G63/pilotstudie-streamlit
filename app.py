@@ -149,6 +149,7 @@ def init_state():
         "phase": "welcome",
         "scroll_token": 0,
 
+        "combination_id": None,
         "phase1_distribution": None,
         "phase2_distribution": None,
 
@@ -200,10 +201,13 @@ def generate_price_order():
     return prices
 
 
-def get_assignment_from_google_sheet():
+def get_assignment_from_google_sheet(submission_id):
     response = requests.get(
         GOOGLE_SCRIPT_URL,
-        params={"action": "start"},
+        params={
+            "action": "start",
+            "submission_id": submission_id,
+        },
         timeout=20,
     )
     response.raise_for_status()
@@ -215,6 +219,7 @@ def get_assignment_from_google_sheet():
 
     phase1_distribution = data.get("phase1_distribution") or data.get("phase1_condition")
     phase2_distribution = data.get("phase2_distribution")
+    combination_id = data.get("combination_id", "")
 
     if phase1_distribution not in DISTRIBUTION_INFO:
         raise RuntimeError(f"Ungültige erste Verteilung erhalten: {data}")
@@ -228,17 +233,22 @@ def get_assignment_from_google_sheet():
     if not data.get("participant_id"):
         raise RuntimeError(f"Keine participant_id erhalten: {data}")
 
-    return data["participant_id"], phase1_distribution, phase2_distribution
+    return data["participant_id"], phase1_distribution, phase2_distribution, combination_id
 
 
 def start_study():
-    participant_id, phase1_distribution, phase2_distribution = get_assignment_from_google_sheet()
+    submission_id = str(uuid.uuid4())
+
+    participant_id, phase1_distribution, phase2_distribution, combination_id = get_assignment_from_google_sheet(
+        submission_id
+    )
 
     st.session_state.phase = "first_stimulus"
     st.session_state.participant_id = participant_id
+    st.session_state.submission_id = submission_id
+    st.session_state.combination_id = combination_id
     st.session_state.phase1_distribution = phase1_distribution
     st.session_state.phase2_distribution = phase2_distribution
-    st.session_state.submission_id = str(uuid.uuid4())
 
     st.session_state.phase1_price_order = generate_price_order()
     st.session_state.phase2_price_order = generate_price_order()
@@ -327,6 +337,8 @@ def build_result_row():
     row = {
         "submission_id": st.session_state.submission_id,
         "participant_id": st.session_state.participant_id,
+
+        "combination_id": st.session_state.combination_id,
 
         "phase1_condition": st.session_state.phase1_distribution,
         "phase1_distribution": st.session_state.phase1_distribution,
@@ -528,12 +540,17 @@ if st.session_state.phase == "welcome":
     st.title("Pilotstudie — Stochastische BATNA & Reservationspreis")
     st.write("Bitte starte die Umfrage, wenn du bereit bist.")
 
+    st.info(
+        "Hinweis: Falls beim Weiterklicken kurz eine Fehlermeldung erscheint oder die Seite nicht sofort reagiert, "
+        "warten Sie bitte einen Moment und klicken Sie erneut auf den Button. Manchmal braucht die Verbindung zum Server kurz länger."
+    )
+
     if st.button("Umfrage starten", type="primary"):
         try:
             start_study()
             st.rerun()
         except Exception as e:
-            st.error("Die Umfrage konnte gerade nicht gestartet werden.")
+            st.error("Die Umfrage konnte gerade nicht gestartet werden. Bitte warten Sie kurz und versuchen Sie es erneut.")
             st.caption(str(e))
 
 
