@@ -95,9 +95,13 @@ Du musst deshalb erneut eine Wohnung suchen und findest wieder eine perfekte Woh
 Der Vermieter macht dir ein Angebot. Du kannst Wohnung A direkt annehmen oder ablehnen und auf alternative Wohnungen warten. Diese alternativen Angebote nennen wir wieder WOHNUNG B."""
 
 
-MANIPULATION_OPTIONS = [
+MANIPULATION_OPTIONS_UNIMODAL = [
     "a) Die Preise liegen meistens dicht beieinander und konzentrieren sich um einen ähnlichen Mietpreis.",
     "b) Die Preise schwanken stark und es gibt sowohl günstigere als auch deutlich teurere Angebote.",
+]
+
+
+MANIPULATION_OPTIONS_BIMODAL = [
     "c) Die Preise konzentrieren sich um zwei nahe beieinanderliegende Preisbereiche.",
     "d) Die Preise konzentrieren sich um zwei deutlich getrennte Preisbereiche.",
 ]
@@ -157,7 +161,9 @@ def init_state():
         "phase2_responses": {},
 
         "demographics": {},
-        "distribution_weighting_text": None,
+
+        "distribution_weighting_choice": None,
+        "distribution_weighting_explanation": None,
         "feedback_text": None,
         "ambiguity_choice": None,
 
@@ -242,9 +248,11 @@ def start_study():
 
     st.session_state.phase1_responses = {}
     st.session_state.phase2_responses = {}
+
     st.session_state.demographics = {}
 
-    st.session_state.distribution_weighting_text = None
+    st.session_state.distribution_weighting_choice = None
+    st.session_state.distribution_weighting_explanation = None
     st.session_state.feedback_text = None
     st.session_state.ambiguity_choice = None
 
@@ -340,7 +348,8 @@ def build_result_row():
         "phase2_rp_binaer": phase2_rp_binaer,
         "phase2_rp_skala": phase2_rp_skala,
 
-        "gewichteter_verteilungsbereich": st.session_state.distribution_weighting_text,
+        "gewichteter_verteilungsbereich": st.session_state.distribution_weighting_choice,
+        "gewichteter_verteilungsbereich_freitext_optional": st.session_state.distribution_weighting_explanation,
 
         "risiko_investition_A_sicher": st.session_state.risk_investment_safe,
         "risiko_investition_B_riskant": st.session_state.risk_investment_risky,
@@ -389,8 +398,18 @@ def save_results():
         raise RuntimeError(f"Apps Script Antwort war nicht ok: {result}")
 
 
+def get_manipulation_options(distribution_key):
+    info = DISTRIBUTION_INFO[distribution_key]
+
+    if info["form"] == "unimodal":
+        return MANIPULATION_OPTIONS_UNIMODAL
+
+    return MANIPULATION_OPTIONS_BIMODAL
+
+
 def render_manipulation_check(stage, distribution_key):
     info = DISTRIBUTION_INFO[distribution_key]
+    manipulation_options = get_manipulation_options(distribution_key)
 
     if stage == "first":
         form_key = "first_manipulation_check"
@@ -406,7 +425,7 @@ def render_manipulation_check(stage, distribution_key):
     with st.form(form_key):
         answer = st.radio(
             "Welche Aussage trifft auf die alternativen Wohnungen am ehesten zu?",
-            options=MANIPULATION_OPTIONS,
+            options=manipulation_options,
             index=None,
         )
 
@@ -570,8 +589,19 @@ elif st.session_state.phase == "demographics":
     st.subheader("Abschlussfragen")
 
     with st.form("demography_form"):
-        distribution_weighting_text = st.text_area(
-            "Wenn Sie an die gezeigten Mietpreis-Verteilungen zurückdenken: Haben Sie sich bei Ihrer Entscheidung eher an einem günstigeren Bereich, einem teureren Bereich oder an der gesamten Verteilung orientiert? Erläutern Sie dies bitte kurz in 1–2 Sätzen.",
+        distribution_weighting_choice = st.radio(
+            "Wenn Sie an die beiden Situationen und Mietpreis-Verteilungen zurückdenken: Woran haben Sie sich bei Ihren Entscheidungen am ehesten orientiert?",
+            options=[
+                "Eher am günstigeren Bereich der Mietpreis-Verteilung",
+                "Eher am teureren Bereich der Mietpreis-Verteilung",
+                "An der gesamten Verteilung gleichermaßen",
+                "Weiß nicht / kann ich nicht sagen",
+            ],
+            index=None,
+        )
+
+        distribution_weighting_explanation = st.text_area(
+            "Falls Sie möchten, erläutern Sie das bitte kurz in 1–2 Sätzen. Diese Antwort ist optional.",
             height=100,
         )
 
@@ -593,7 +623,7 @@ Wie viel der 100.000 € würden Sie in Investition B investieren?
             "Betrag für Investition B",
             min_value=0,
             max_value=100000,
-            value=50000,
+            value=0,
             step=5000,
             format="%d €",
         )
@@ -613,8 +643,8 @@ Für welche Urne entscheiden Sie sich?"""
         ambiguity_choice = st.radio(
             "Bitte wählen Sie eine Urne aus:",
             options=[
-                "Urne A – bekannte Wahrscheinlichkeit",
-                "Urne B – unbekannte Wahrscheinlichkeit",
+                "Urne A",
+                "Urne B",
             ],
             index=None,
         )
@@ -659,8 +689,8 @@ Für welche Urne entscheiden Sie sich?"""
     if submitted:
         required_missing = False
 
-        if not distribution_weighting_text.strip():
-            st.error("Bitte erläutern Sie kurz, welcher Bereich der Verteilung für Ihre Entscheidung wichtig war.")
+        if distribution_weighting_choice is None:
+            st.error("Bitte beantworten Sie, woran Sie sich bei den Mietpreis-Verteilungen am ehesten orientiert haben.")
             required_missing = True
 
         if ambiguity_choice is None:
@@ -676,12 +706,13 @@ Für welche Urne entscheiden Sie sich?"""
             required_missing = True
 
         if not required_missing:
-            if ambiguity_choice.startswith("Urne A"):
+            if ambiguity_choice == "Urne A":
                 ambiguity_value = "bekannte_wahrscheinlichkeit"
             else:
                 ambiguity_value = "unbekannte_wahrscheinlichkeit"
 
-            st.session_state.distribution_weighting_text = distribution_weighting_text.strip()
+            st.session_state.distribution_weighting_choice = distribution_weighting_choice
+            st.session_state.distribution_weighting_explanation = distribution_weighting_explanation.strip()
             st.session_state.feedback_text = feedback_text.strip()
             st.session_state.ambiguity_choice = ambiguity_value
 
