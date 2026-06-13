@@ -208,7 +208,7 @@ def get_assignment_from_google_sheet(submission_id):
             "action": "start",
             "submission_id": submission_id,
         },
-        timeout=20,
+        timeout=45,
     )
     response.raise_for_status()
 
@@ -399,7 +399,7 @@ def save_results():
     response = requests.post(
         GOOGLE_SCRIPT_URL,
         json=row,
-        timeout=30,
+        timeout=45,
     )
 
     response.raise_for_status()
